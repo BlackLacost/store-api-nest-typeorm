@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Item } from '../../items/entities/item.entity';
 
 @Entity()
 export class Type {
@@ -10,4 +11,7 @@ export class Type {
   @ApiProperty()
   @Column({ unique: true })
   name: string;
+
+  @OneToMany(() => Item, (item) => item.type)
+  items: Item[];
 }
