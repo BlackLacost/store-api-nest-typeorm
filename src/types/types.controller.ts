@@ -7,7 +7,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { CreateTypeDto } from './dto/create-type.dto';
 import { UpdateTypeDto } from './dto/update-type.dto';
 import { Type } from './entities/type.entity';
@@ -19,6 +24,7 @@ export class TypesController {
   constructor(private readonly typesService: TypesService) {}
 
   @ApiCreatedResponse({ type: Type })
+  @ApiUnprocessableEntityResponse({ description: `Тип уже существует` })
   @Post()
   create(@Body() createTypeDto: CreateTypeDto) {
     return this.typesService.create(createTypeDto);

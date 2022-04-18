@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTypeDto } from './dto/create-type.dto';
@@ -10,9 +10,17 @@ export class TypesService {
   constructor(
     @InjectRepository(Type) private typesRepository: Repository<Type>,
   ) {}
-  create(createTypeDto: CreateTypeDto) {
-    const type = this.typesRepository.create(createTypeDto);
-    return this.typesRepository.save(type);
+
+  async create(createTypeDto: CreateTypeDto) {
+    const { name: typeName } = createTypeDto;
+    if (await this.typesRepository.findOne({ name: typeName })) {
+      throw new HttpException(
+        `Тип ${typeName} уже существует`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    const brand = this.typesRepository.create(createTypeDto);
+    return this.typesRepository.save(brand);
   }
 
   findAll() {
