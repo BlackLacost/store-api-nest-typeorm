@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypesModule } from './types/types.module';
 
 @Module({
-  imports: [TypesModule],
+  imports: [TypeOrmModule.forRoot(), TypesModule],
   controllers: [],
   providers: [],
 })
