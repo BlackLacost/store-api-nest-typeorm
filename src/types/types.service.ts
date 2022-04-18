@@ -43,4 +43,12 @@ export class TypesService {
     await this.typesRepository.remove(type);
     return typeCopy;
   }
+
+  async preloadTypeByName(name: string): Promise<Type> {
+    const existingType = await this.typesRepository.findOne({ name });
+    if (existingType) {
+      return existingType;
+    }
+    return this.typesRepository.create({ name });
+  }
 }

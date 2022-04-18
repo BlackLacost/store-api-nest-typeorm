@@ -43,4 +43,14 @@ export class BrandsService {
     await this.brandsRepository.remove(brand);
     return copy;
   }
+
+  async preloadBrandByName(name: string): Promise<Brand> {
+    const existingBrand = await this.brandsRepository.findOne({ name });
+    if (existingBrand) {
+      return existingBrand;
+    }
+    // Не нужно сохранять так как будет использоваться в релейшене
+    // у которого будет cascade: true
+    return this.brandsRepository.create({ name });
+  }
 }
