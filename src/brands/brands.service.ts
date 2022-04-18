@@ -53,4 +53,8 @@ export class BrandsService {
     // у которого будет cascade: true
     return this.brandsRepository.create({ name });
   }
+
+  clear() {
+    return this.brandsRepository.delete({});
+  }
 }

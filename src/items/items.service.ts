@@ -66,4 +66,10 @@ export class ItemsService {
     await this.itemsRepository.remove(item);
     return copy;
   }
+
+  async clear() {
+    await this.itemsRepository.delete({});
+    await this.brandsService.clear();
+    return await this.typesService.clear();
+  }
 }

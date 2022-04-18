@@ -51,4 +51,8 @@ export class TypesService {
     }
     return this.typesRepository.create({ name });
   }
+
+  clear() {
+    return this.typesRepository.delete({});
+  }
 }

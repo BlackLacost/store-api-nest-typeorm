@@ -26,4 +26,22 @@ export class SeedService {
       await this.itemsService.create(item);
     }
   }
+
+  @Command({
+    command: 'clear',
+    description: 'Clear DB',
+  })
+  async clear(): Promise<void> {
+    const spin = createSpinner();
+
+    spin.start('Clear the DB\n');
+
+    await this.clearItems();
+
+    spin.succeed('Clear done');
+  }
+
+  clearItems() {
+    return this.itemsService.clear();
+  }
 }
