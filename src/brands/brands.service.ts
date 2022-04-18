@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBrandDto } from './dto/create-brand.dto';
@@ -11,7 +11,14 @@ export class BrandsService {
     @InjectRepository(Brand) private brandsRepository: Repository<Brand>,
   ) {}
 
-  create(createBrandDto: CreateBrandDto) {
+  async create(createBrandDto: CreateBrandDto) {
+    const { name: brandName } = createBrandDto;
+    if (await this.brandsRepository.findOne({ name: brandName })) {
+      throw new HttpException(
+        `Бренд ${brandName} уже существует`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
     const brand = this.brandsRepository.create(createBrandDto);
     return this.brandsRepository.save(brand);
   }

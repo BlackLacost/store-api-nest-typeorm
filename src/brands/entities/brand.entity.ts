@@ -9,7 +9,7 @@ export class Brand {
   id: string;
 
   @ApiProperty()
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @OneToMany(() => Item, (item) => item.brand)
