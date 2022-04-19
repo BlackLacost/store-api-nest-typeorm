@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,13 +7,20 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { randomUUID } from 'crypto';
+import { diskStorage } from 'multer';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { Item } from './entities/item.entity';
@@ -24,10 +32,40 @@ export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @ApiCreatedResponse({ type: Item })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateItemDto })
   @ApiUnprocessableEntityResponse({ description: 'Товар уже существует' })
   @Post()
-  create(@Body() createItemDto: CreateItemDto) {
-    return this.itemsService.create(createItemDto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './upload/item-images',
+        filename: (_, file, cb) => {
+          cb(null, `${randomUUID()}_${file.originalname}`);
+        },
+      }),
+      fileFilter: (_, file, cb) => {
+        if (!file.mimetype.includes('image')) {
+          return cb(
+            new BadRequestException('Поддерживаются только картинки'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: Math.pow(1024, 2), // 1 MB
+      },
+    }),
+  )
+  create(
+    @Body() createItemDto: CreateItemDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.itemsService.create({
+      ...createItemDto,
+      image: image.filename,
+    });
   }
 
   @ApiOkResponse({ type: [Item] })
@@ -43,9 +81,41 @@ export class ItemsController {
   }
 
   @ApiCreatedResponse({ type: Item })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateItemDto })
+  @ApiUnprocessableEntityResponse({ description: 'Товар уже существует' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.update(id, updateItemDto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './upload/item-images',
+        filename: (_, file, cb) => {
+          cb(null, `${randomUUID()}_${file.originalname}`);
+        },
+      }),
+      fileFilter: (_, file, cb) => {
+        if (!file.mimetype.includes('image')) {
+          return cb(
+            new BadRequestException('Поддерживаются только картинки'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: Math.pow(1024, 2), // 1 MB
+      },
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateItemDto: UpdateItemDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.itemsService.update(id, {
+      ...updateItemDto,
+      image: image.filename,
+    });
   }
 
   @ApiOkResponse({ type: Item })

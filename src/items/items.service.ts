@@ -42,7 +42,7 @@ export class ItemsService {
   }
 
   findOne(id: string) {
-    return this.itemsRepository.findOne(id);
+    return this.itemsRepository.findOne(id, { relations: ['brand', 'type'] });
   }
 
   async update(id: string, updateItemDto: UpdateItemDto) {
@@ -55,7 +55,8 @@ export class ItemsService {
       ...(typeName && { type }),
       id,
     });
-    return this.itemsRepository.save(item);
+    await this.itemsRepository.save(item);
+    return this.findOne(item.id);
   }
 
   async remove(id: string) {

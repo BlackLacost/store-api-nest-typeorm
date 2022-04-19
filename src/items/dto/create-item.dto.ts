@@ -7,8 +7,8 @@ export class CreateItemDto {
   @ApiProperty({ type: Number })
   price: number;
 
-  @ApiProperty({ required: false })
-  image?: string;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  image?: any;
 
   @ApiProperty({ description: 'Название бренда' })
   brand: string;

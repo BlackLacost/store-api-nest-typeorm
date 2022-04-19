@@ -29,9 +29,19 @@ export class Item {
   })
   price: number;
 
-  @ApiProperty({ default: 'http://localhost/default.jpg' })
-  @Column({ default: 'http://localhost/default.jpg' })
-  image: string = 'http://localhost/default.jpg';
+  @ApiProperty({ default: 'default.jpg' })
+  @Column({
+    default: 'default.jpg',
+    transformer: {
+      to(filename) {
+        return filename;
+      },
+      from(filename) {
+        return `http://localhost:5000/item-images/${filename}`;
+      },
+    },
+  })
+  image: string = 'default.jpg';
 
   @ApiProperty({ type: () => Type })
   @ManyToOne(() => Type, (type) => type.items, { cascade: true })

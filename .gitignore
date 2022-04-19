@@ -1,4 +1,5 @@
 pgdata/
+upload/
 .env
 
 # compiled output

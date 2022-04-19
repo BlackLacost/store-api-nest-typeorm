@@ -14,8 +14,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, { customSiteTitle: 'Store API' });
 
   const PORT = 5000;
-  await app.listen(PORT, () => {
-    console.log(`API on http://localhost:${PORT}/api/`);
-  });
+  await app.listen(PORT);
+  console.log(`API on ${await app.getUrl()}/api/`);
 }
 bootstrap();
