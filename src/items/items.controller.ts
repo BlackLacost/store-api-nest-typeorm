@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,12 +23,17 @@ import {
 } from '@nestjs/swagger';
 import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
+import { ApiPaginatedResponse } from '../common/pagination/api-paginated-response.decorator';
+import { PageOptionsDto } from '../common/pagination/page-optioins.dto';
+import { PageDto } from '../common/pagination/page.dto';
 import { CreateItemDto } from './dto/create-item.dto';
+import { QueryItemDto } from './dto/query-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { Item } from './entities/item.entity';
+import { Item } from './item.entity';
 import { ItemsService } from './items.service';
 
 @ApiTags('items')
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
@@ -68,10 +75,13 @@ export class ItemsController {
     });
   }
 
-  @ApiOkResponse({ type: [Item] })
+  @ApiPaginatedResponse(Item)
   @Get()
-  findAll() {
-    return this.itemsService.findAll();
+  findAll(
+    @Query() pageOptionsDto: PageOptionsDto,
+    @Query() queryItemDto: QueryItemDto,
+  ): Promise<PageDto<Item>> {
+    return this.itemsService.findAll(pageOptionsDto, queryItemDto);
   }
 
   @ApiOkResponse({ type: Item })

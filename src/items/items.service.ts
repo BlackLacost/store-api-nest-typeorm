@@ -2,10 +2,14 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BrandsService } from '../brands/brands.service';
+import { PageMetaDto } from '../common/pagination/page-meta.dto';
+import { PageOptionsDto } from '../common/pagination/page-optioins.dto';
+import { PageDto } from '../common/pagination/page.dto';
 import { TypesService } from '../types/types.service';
 import { CreateItemDto } from './dto/create-item.dto';
+import { QueryItemDto } from './dto/query-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { Item } from './entities/item.entity';
+import { Item } from './item.entity';
 
 @Injectable()
 export class ItemsService {
@@ -37,8 +41,25 @@ export class ItemsService {
     return this.itemsRepository.save(newItem);
   }
 
-  findAll() {
-    return this.itemsRepository.find({ relations: ['brand', 'type'] });
+  async findAll(
+    pageOptionsDto: PageOptionsDto,
+    queryItemDto: QueryItemDto,
+  ): Promise<PageDto<Item>> {
+    const { brandName, typeName, brandId, typeId } = queryItemDto;
+    const [entities, itemCount] = await this.itemsRepository.findAndCount({
+      // Если указан id у него будет приоритет над именем, так как идет после
+      ...(brandName && { where: { type: { name: brandName } } }),
+      ...(typeName && { where: { type: { name: typeName } } }),
+      ...(brandId && { where: { brand: { id: brandId } } }),
+      ...(typeId && { where: { type: { id: typeId } } }),
+      order: { name: pageOptionsDto.order },
+      take: pageOptionsDto.take,
+      skip: pageOptionsDto.skip,
+      relations: ['brand', 'type'],
+    });
+
+    const pageMetaDto = new PageMetaDto(pageOptionsDto, itemCount);
+    return new PageDto(entities, pageMetaDto);
   }
 
   findOne(id: string) {

@@ -15,7 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateTypeDto } from './dto/create-type.dto';
 import { UpdateTypeDto } from './dto/update-type.dto';
-import { Type } from './entities/type.entity';
+import { Type } from './type.entity';
 import { TypesService } from './types.service';
 
 @Controller('types')
