@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Brand } from '../brands/brand.entity';
 import { Type } from '../types/type.entity';
+import { ItemInfo } from './item-info.entity';
 
 @Entity()
 export class Item {
@@ -50,4 +57,8 @@ export class Item {
   @ApiProperty({ type: () => Brand })
   @ManyToOne(() => Brand, (brand) => brand.items, { cascade: true })
   brand: Brand;
+
+  @ApiProperty({ type: () => [ItemInfo] })
+  @OneToMany(() => ItemInfo, (itemInfo) => itemInfo.item, { cascade: true })
+  itemInfos: ItemInfo[];
 }

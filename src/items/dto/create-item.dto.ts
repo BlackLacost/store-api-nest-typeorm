@@ -1,4 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsArray } from 'class-validator';
+import { CreateItemInfoDto } from './create-item-info.dto';
 
 export class CreateItemDto {
   @ApiProperty()
@@ -7,7 +10,7 @@ export class CreateItemDto {
   @ApiProperty({ type: Number })
   price: number;
 
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
   image?: any;
 
   @ApiProperty({ description: 'Название бренда' })
@@ -15,4 +18,9 @@ export class CreateItemDto {
 
   @ApiProperty({ description: 'Тип товара' })
   type: string;
+
+  @ApiPropertyOptional({ type: CreateItemInfoDto, isArray: true, default: [] })
+  @Transform(({ value }) => JSON.parse(`[${value}]`))
+  @IsArray()
+  info?: CreateItemInfoDto[] = [];
 }

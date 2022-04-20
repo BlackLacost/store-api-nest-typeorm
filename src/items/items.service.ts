@@ -6,21 +6,29 @@ import { PageMetaDto } from '../common/pagination/page-meta.dto';
 import { PageOptionsDto } from '../common/pagination/page-optioins.dto';
 import { PageDto } from '../common/pagination/page.dto';
 import { TypesService } from '../types/types.service';
+import { CreateItemInfoDto } from './dto/create-item-info.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { QueryItemDto } from './dto/query-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { ItemInfo } from './item-info.entity';
 import { Item } from './item.entity';
 
 @Injectable()
 export class ItemsService {
   constructor(
     @InjectRepository(Item) private itemsRepository: Repository<Item>,
+    @InjectRepository(ItemInfo)
+    private itemInfosRepository: Repository<ItemInfo>,
     @Inject(BrandsService) private brandsService: BrandsService,
     @Inject(TypesService) private typesService: TypesService,
   ) {}
 
+  preloadInfo(createItemInfoDto: CreateItemInfoDto): ItemInfo {
+    return this.itemInfosRepository.create(createItemInfoDto);
+  }
+
   async create(createItemDto: CreateItemDto): Promise<Item> {
-    const { name, brand: brandName, type: typeName } = createItemDto;
+    const { name, brand: brandName, type: typeName, info } = createItemDto;
     const item = await this.itemsRepository.findOne({ name });
 
     if (item) {
@@ -32,11 +40,15 @@ export class ItemsService {
 
     const brand = await this.brandsService.preloadBrandByName(brandName);
     const type = await this.typesService.preloadTypeByName(typeName);
+    const itemInfos = info.map((createItemDto) =>
+      this.preloadInfo(createItemDto),
+    );
 
     const newItem = this.itemsRepository.create({
       ...createItemDto,
       brand,
       type,
+      itemInfos,
     });
     return this.itemsRepository.save(newItem);
   }
@@ -55,7 +67,7 @@ export class ItemsService {
       order: { name: pageOptionsDto.order },
       take: pageOptionsDto.take,
       skip: pageOptionsDto.skip,
-      relations: ['brand', 'type'],
+      relations: ['brand', 'type', 'itemInfos'],
     });
 
     const pageMetaDto = new PageMetaDto(pageOptionsDto, itemCount);
@@ -90,6 +102,7 @@ export class ItemsService {
   }
 
   async clear() {
+    await this.itemInfosRepository.delete({});
     await this.itemsRepository.delete({});
     await this.brandsService.clear();
     return await this.typesService.clear();

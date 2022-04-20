@@ -71,7 +71,7 @@ export class ItemsController {
   ) {
     return this.itemsService.create({
       ...createItemDto,
-      image: image.filename,
+      image: image?.filename,
     });
   }
 
